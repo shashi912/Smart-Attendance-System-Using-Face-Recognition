@@ -1,0 +1,47 @@
+# fake_attendance.py
+import csv, random, datetime, json, argparse
+
+def make_attendance(recognitions, out_csv="attendance.csv", seed=42):
+    """
+    recognitions: list of (frame_index, recognized_id) pairs
+    will output CSV with columns: id,name,timestamp,confidence,frame
+    """
+    random.seed(seed)
+    id_to_name = {1:"Alice", 2:"Bob", 3:"Charlie", 4:"Dana"}
+
+    rows = []
+    base_time = datetime.datetime(2025, 10, 21, 9, 0, 0)  # example base (use real date if needed)
+    for frame_idx, rid, conf in recognitions:
+        # jitter timestamp by up to ±30 seconds
+        ts = base_time + datetime.timedelta(seconds=frame_idx*2 + random.randint(-30,30))
+        rows.append({
+            "id": rid,
+            "name": id_to_name.get(rid, f"person_{rid}"),
+            "timestamp": ts.isoformat(sep=' '),
+            "confidence": round(conf, 3),
+            "frame": frame_idx
+        })
+
+    # deduplicate to first-seen per id (common attendance behavior)
+    seen = {}
+    output = []
+    for r in rows:
+        if r["id"] not in seen:
+            seen[r["id"]] = True
+            output.append(r)
+
+    # write CSV
+    with open(out_csv, "w", newline='') as f:
+        w = csv.DictWriter(f, fieldnames=["id","name","timestamp","confidence","frame"])
+        w.writeheader()
+        for r in output:
+            w.writerow(r)
+
+    print(f"Wrote {out_csv} with {len(output)} entries")
+    return output
+
+if __name__ == "__main__":
+    # example usage:
+    # fake recognitions list: (frame_index, id, confidence)
+    sample = [(1,1,0.95),(3,2,0.87),(5,1,0.96),(7,3,0.90)]
+    make_attendance(sample, out_csv="attendance_demo.csv", seed=123)
