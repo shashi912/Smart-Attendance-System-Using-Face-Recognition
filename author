@@ -1,0 +1,14 @@
+
+---
+
+## 🪄 **Commands to Upload on GitHub**
+
+Once you’ve created the folder and files, use these commands:
+
+```bash
+git init
+git add .
+git commit -m "Smart Attendance System - Initial Commit"
+git branch -M main
+git remote add origin https://github.com/yourusername/Smart_Attendance_System.git
+git push -u origin main
